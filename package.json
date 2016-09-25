@@ -1,0 +1,19 @@
+{
+  "name": "rsvp-engine",
+  "version": "0.0.1",
+  "description": "Backend API for managing small scale events like weddings.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielzehe/rsvp-engine.git"
+  },
+  "author": "Daniel Zehe",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielzehe/rsvp-engine/issues"
+  },
+  "homepage": "https://github.com/danielzehe/rsvp-engine#readme"
+}
