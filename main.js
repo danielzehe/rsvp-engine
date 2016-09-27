@@ -84,7 +84,7 @@ api_router.get('/guest/id/:id',function(req,res){
 *  The id is a base58 encoded number that is referenced in the personID field of the guest JSON object. 
 */
 api_router.get('/guest/personID/:id',function(req,res){
-	var guest_personID = req.params.id;
+	var guest_personID = Base58.decode(req.params.id);
 	console.log("personID (b58/int): "+req.params.id+"/"+guest_personID);
 
 	db.collection('guests').findOne({personID:guest_personID},function(err,guest){
@@ -108,17 +108,19 @@ api_router.get('/guest/personID/:id',function(req,res){
 *	adds a new guest object to the database. Before adding, the latest personID is requested from the database
 *	and increased by one. Possible point of failure when high demand, should be atomic.	
 */
-
 api_router.put('/guest',function(req,res){
 	var guest = req.body;
 
 	 db.collection('guests').find({},{_id:0,personID:1}).sort({personID:-1}).limit(1).toArray(function(err,personID){
+	 	// default value for the personID is 100000
+	 	//will only be used when there is no prior object in the database
 	 	var nextpersonID = 10000;
 	 	if(Object.getOwnPropertyNames(personID[0]).length>0){
-	 		nextpersonID = Base58.decode(personID[0].personID)+1;
+	 		nextpersonID = personID[0].personID+1;
 	 	}
 
-	 	guest.personID = Base58.encode(nextpersonID); 
+	 	//encode the personID using base58 and adding it to the object
+	 	guest.personID = nextpersonID; 
 	 	db.collection('guests').insert(guest,function(err,result){
 	 		if(!err){
 	 			res.status(200).send();
@@ -130,6 +132,49 @@ api_router.put('/guest',function(req,res){
 	 });
 });
 
+/*
+*	returns all invitations in the database. This will return the data as is no changes.
+*/
+api_router.get('/invitations',function(req,res){
+	db.collection('rsvp').find({}).toArray(function(err,invitations){
+		if(!err){
+			res.status(200).send(invitations);
+		}
+		else {
+			res.status(500).send();
+		}
+	});
+});
+
+/*
+*	adds a new invitation to the database. Before adding, the latest inviteID is requested from the database
+* 	and increased by one. Possible point of failure when high demand, should be atomic.	
+*/
+
+api_router.put('/invitation',function(req,res){
+	var invitation = req.body;
+	// get first guest by _ID
+
+	db.collection('rsvp').find({},{_id:0,inviteID:1}).sort({inviteID:-1}).limit(1).toArray(function(err,inviteID){
+		var nextinviteID = 10000;
+		if(Object.getOwnPropertyNames(inviteID[0]).length>0){
+			nextinviteID = inviteID[0].inviteID+1;
+		}
+
+		invitation.inviteID = nextinviteID;
+		db.collection('rsvp').insert(invitation,function(err,result){
+			if(!err){
+				res.status(200).send();
+			}
+			else {
+				res.status(500).send();
+			}
+		});
+
+	});
+
+
+});
 
 
 app.use('/api',api_router);
