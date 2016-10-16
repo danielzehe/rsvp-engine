@@ -50,7 +50,12 @@ api_router.get('/',function(req,res){
 api_router.get('/guests',function(req,res){
 	db.collection('guests').find({}).toArray(function(err,guests){
 		if(!err) {
-			res.status(200).send(guests);
+			
+			outguest = guests.map(function(guest){
+				guest.personID = Base58.encode(guest.personID);
+				return guest;
+			})
+			res.status(200).send(outguest);
 		}
 		else {
 			res.status(500).send();
@@ -83,18 +88,19 @@ api_router.get('/guest/id/:id',function(req,res){
 *  returns a specific guest as given by the :id parameter.
 *  The id is a base58 encoded number that is referenced in the personID field of the guest JSON object. 
 */
-api_router.get('/guest/personID/:id',function(req,res){
+api_router.get('/guest/personID/b58/:id',function(req,res){
 	var guest_personID = Base58.decode(req.params.id);
 	console.log("personID (b58/int): "+req.params.id+"/"+guest_personID);
 
 	db.collection('guests').findOne({personID:guest_personID},function(err,guest){
 		if(!err){
-			console.log(guest);
+			// console.log(guest);
 			
 			if(guest == null){
 				res.status(404).send();
 			}	
 			else {
+				guest.personID = Base58.encode(guest.personID);
 				res.status(200).send(guest);
 			}
 		}
@@ -103,6 +109,37 @@ api_router.get('/guest/personID/:id',function(req,res){
 		}
 	});
 });
+
+
+api_router.post('/guest/personID/b58/:id',function(req,res){
+	var guest_personID = Base58.decode(req.params.id);
+	console.log("personID (b58/int): "+req.params.id+"/"+guest_personID);
+
+	var guest = req.body;
+	guest.personID = guest_personID;
+
+
+
+	console.log(guest);
+
+
+	db.collection('guests').findOne({personID:guest_personID},function(err1,foundguest){
+		guest._id = foundguest._id;
+		db.collection('guests').update({_id:foundguest._id},guest,function(err,result){
+			// console.log([err,result]);
+			if(!err){
+				res.status(200).send();
+			}
+			else {
+				res.status(503).send();
+			}
+		});
+	})
+
+	
+
+
+})
 
 /*
 *	adds a new guest object to the database. Before adding, the latest personID is requested from the database
