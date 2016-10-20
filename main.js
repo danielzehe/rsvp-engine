@@ -5,7 +5,6 @@ var bodyParser = require('body-parser')
 var Base58 = require('base58');
 
 
-
 var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -175,7 +174,19 @@ api_router.put('/guest',function(req,res){
 api_router.get('/invitations',function(req,res){
 	db.collection('rsvp').find({}).toArray(function(err,invitations){
 		if(!err){
-			res.status(200).send(invitations);
+
+
+
+			outinvites = invitations.map(function(invitation){
+				guests = invitation.guests.map(function(guestid){
+					return Base58.encode(guestid);
+				});
+				invitation.guests = guests;
+				return invitation;
+			});
+
+
+			res.status(200).send(outinvites);
 		}
 		else {
 			res.status(500).send();
@@ -199,6 +210,13 @@ api_router.put('/invitation',function(req,res){
 		}
 
 		invitation.inviteID = nextinviteID;
+
+		var guestids = invitation.guests.map(function(guest){
+			return Base58.decode(guest);
+		});
+		invitation.guests = guestids;
+
+
 		db.collection('rsvp').insert(invitation,function(err,result){
 			if(!err){
 				res.status(200).send();
