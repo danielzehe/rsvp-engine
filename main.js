@@ -135,9 +135,6 @@ api_router.post('/guest/personID/b58/:id',function(req,res){
 		});
 	})
 
-	
-
-
 })
 
 /*
@@ -174,10 +171,9 @@ api_router.put('/guest',function(req,res){
 api_router.get('/invitations',function(req,res){
 	db.collection('rsvp').find({}).toArray(function(err,invitations){
 		if(!err){
-
-
-
 			outinvites = invitations.map(function(invitation){
+				invitation.inviteID = Base58.encode(invitation.inviteID);
+
 				guests = invitation.guests.map(function(guestid){
 					return Base58.encode(guestid);
 				});
@@ -227,9 +223,68 @@ api_router.put('/invitation',function(req,res){
 		});
 
 	});
-
-
 });
+
+
+api_router.get('/invitation/inviteID/b58/:id',function(req,res){
+	var invitation_inviteID = Base58.decode(req.params.id);
+	console.log(req.params.id);
+
+	db.collection('rsvp').findOne({inviteID:invitation_inviteID},function(err,invitation){
+		if(!err){
+			// console.log(guest);
+			
+			if(invitation == null){
+				res.status(404).send();
+			}	
+			else {
+				invitation.inviteID = Base58.encode(invitation.inviteID);
+
+
+				guests = invitation.guests.map(function(guestid){
+					return Base58.encode(guestid);
+				});
+				invitation.guests = guests;
+				res.status(200).send(invitation);
+			}
+		}
+		else  {
+			res.status(500).send();
+		}
+	});
+})
+
+api_router.post('/invitation/inviteID/b58/:id',function(req,res){
+
+
+	var invitation_inviteID = Base58.decode(req.params.id);
+	console.log(invitation_inviteID);
+	var invitation = req.body;
+	invitation.inviteID = invitation_inviteID;
+
+
+	var guestids = invitation.guests.map(function(guest){
+		return Base58.decode(guest);
+	});
+	invitation.guests = guestids;
+
+
+
+	db.collection('rsvp').findOne({inviteID:invitation_inviteID},function(err1,foundinvitation){
+		invitation._id = foundinvitation._id;
+		db.collection('rsvp').update({_id:foundinvitation._id},invitation,function(err2,result){
+			if(!err2){
+				res.status(200).send();
+			}
+			else {
+				res.status(503).send();
+			}
+		});
+	});
+
+
+
+})
 
 
 app.use('/api',api_router);
