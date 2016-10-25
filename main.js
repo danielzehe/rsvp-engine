@@ -6,14 +6,20 @@ var Base58 = require('base58');
 
 
 var app = express();
+app.set('views','./views')
+app.set('view engine','pug')
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 var api_router = express.Router();
+var web_router = express.Router();
 
 var url = 'mongodb://rsvp_user:rsvp_user@localhost:27017/rsvp_engine';
 
 var db = null;
+
+
+app.use('/static',express.static('static'));
 
 /*
 *	This makes sure that we are connected to the db before doing any api call.
@@ -37,7 +43,7 @@ app.use(function(req,res,next){
 })
 
 app.get('/',function(req,res){
-	res.status(200).send('All Good');
+	res.status(200).render('landing')
 });
 
 api_router.get('/',function(req,res){
@@ -288,6 +294,141 @@ api_router.post('/invitation/inviteID/b58/:id',function(req,res){
 
 
 app.use('/api',api_router);
+
+
+web_router.get("/guest/personID/b58/:id",function(req,res){
+var guest_personID = Base58.decode(req.params.id);
+	console.log("personID (b58/int): "+req.params.id+"/"+guest_personID);
+
+	db.collection('guests').findOne({personID:guest_personID},function(err,guest){
+		if(!err){
+			// console.log(guest);
+			
+			if(guest == null){
+				res.status(404).send();
+			}	
+			else {
+				guest.personID = Base58.encode(guest.personID);
+				
+				res.render('test',{firstname:guest.name,lastname:guest.surname});
+			}
+		}
+		else  {
+			res.status(500).send();
+		}
+	});
+
+
+
+})
+
+
+
+web_router.get("/invitation/inviteID/b58/:id",function(req,res){
+	var invitation_inviteID = Base58.decode(req.params.id);
+	console.log(req.params.id);
+
+	db.collection('rsvp').findOne({inviteID:invitation_inviteID},function(err,invitation){
+		if(!err){
+			if(invitation == null){
+				res.status(404).send();
+			}	
+			else {
+				console.log(invitation.guests);
+				db.collection('guests').find({"personID":{$in:invitation.guests}}).toArray(function(err2,guests){
+					invitation.guests =guests;
+
+					res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests});
+				});
+
+			}
+		}
+		else  {
+			res.status(500).send();
+		}
+	});
+
+})
+
+web_router.get('/invitation/personID/b58/:id',function(req,res){
+	var personid = Base58.decode(req.params.id);
+	console.log('reguest inviation for guest '+personid);
+
+	db.collection('rsvp').findOne({guests:{$elemMatch:{$eq:personid}}},function(err,invitation){
+		if(!err){
+			if(invitation == null){
+				res.status(404).send();
+			}	
+			else {
+				console.log(invitation.guests);
+				db.collection('guests').find({"personID":{$in:invitation.guests}}).toArray(function(err2,guests){
+					invitation.guests =guests;
+
+					res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests});
+				});
+
+			}
+		}
+		else  {
+			res.status(500).send();
+		}
+	});
+
+
+})
+web_router.post('/invitation/personID',function(req,res){
+	var sub_lastname = req.body.lastname;
+	var sub_personID = Base58.decode(req.body.personID);
+	console.log(sub_lastname+ ' '+ sub_personID);
+
+		db.collection('rsvp').findOne({guests:{$elemMatch:{$eq:sub_personID}}},function(err,invitation){
+			console.log([err,invitation]);
+			
+		if(err==null){
+			if(invitation == null){
+				console.log('sending error inviation not found')
+				res.status(404).render('error',{errortext:'no invitation with this ID found'});
+			}	
+			else {
+				console.log(invitation.guests);
+				db.collection('guests').find({"personID":{$in:invitation.guests}}).toArray(function(err2,guests){
+					// console.log([err2,guests]);
+					invitation.guests = guests;
+					var hasname = false;
+					for(guest of guests){
+						if(guest.surname.toLowerCase()==sub_lastname.toLowerCase()){
+							hasname=true;
+						}
+					}
+					console.log(hasname);
+					if(hasname){
+						console.log('sending invitation')
+						res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests});
+					}
+					else{
+						console.log('sending error (name mismatch)')
+						res.status(404).render('error',{errortext:'The name does not match the entered ID'})
+					}
+					
+				});
+
+			}
+		}
+		else  {
+			console.log('sending error err occured')
+			res.status(500).send();
+		}
+	});
+
+})
+
+web_router.post('/rsvp',function(req,res){
+	console.log(req.body);
+	res.status(200).send("thanks");
+})
+
+app.use("/web",web_router);
+
 
 app.listen(3000,function(){
 	console.log('listening on 3000');

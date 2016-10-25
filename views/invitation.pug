@@ -1,0 +1,52 @@
+doctype html
+html(lang="en")
+  head
+    title= pageTitle
+    link(rel='stylesheet', href='/static/css/style.css', type='text/css' )
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap-theme.css', type='text/css' )
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css', type='text/css' )
+  body
+    div#heading Wedding of Xiu Fen and Daniel
+    div(class="row")
+      each guest in guests
+        div(class='col-md-8 col-md-offset-2') 
+          h3 #{guest.name} #{guest.surname}
+          div.row
+            div(class="col-md-4 col-sm-4")
+              h4 Address
+            div(class="col-md-4 col-sm-4")
+              h4 Contact
+              p 📧 #{guest.contact.email}
+              p 📱 #{guest.contact.phone}
+            div(class="col-md-4 col-sm-4")
+              h4 Attending
+              each invited in guest.invitedto
+                case invited
+                 when 'SG'
+                   label SG
+                     input(type='checkbox')
+                 when 'SGS'
+                   label SGS
+                     input(type='checkbox') 
+                 when 'DE'
+                   label DE
+                     input(type='checkbox') 
+          hr
+      div(class='col-md-8 col-md-offset-2') 
+        h3 Add +1
+
+
+        //- form(action='/web/rsvp' method='POST')
+        //-   table(class='table table-striped')
+        //-     tr
+        //-       th Name
+        //-       th Surname
+        //-       th Attending
+        //-       each guest in guests
+        //-         tr
+        //-           td #{guest.name}
+        //-           td #{guest.surname}
+        //-           td
+        //-             - var yes = false
+        //-             input(type='checkbox' name='attending' checked=yes ? true : false value=guest.personID )
+        //-   button(class='btn btn-default' v-on:click='hallo') Submit

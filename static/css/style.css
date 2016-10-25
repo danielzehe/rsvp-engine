@@ -1,0 +1,46 @@
+body{
+	background-color:white;
+}
+
+@font-face{
+	font-family: Reusk;
+	src:url(/static/fonts/Reusk.otf);
+}
+
+
+#heading{
+	font-family: Reusk;
+	font-size: 45pt;
+	color:#0d0d0d;
+	text-align: center;
+}
+
+#inputform{
+	text-align: center;
+}
+
+#inputform input{
+	text-align: center;
+	margin: 10px 0;
+	/*height: 45px;*/
+	font-size: 25pt;
+	width: 400px;
+}
+
+#inputform button{
+	width: 400px;
+	font-size: 25pt;
+	background-color:lightgrey;
+	border-color: midnightblue;
+}
+#instruction{
+	text-align: center;
+	font-size: 15pt;
+}
+.error{
+	background-color: rgba(255, 182, 193, 0.66);
+}
+#controlpannel{
+	text-align: center;
+	margin-top: 10px
+}

@@ -1,0 +1,14 @@
+doctype html
+html(lang="en")
+  head
+    title Error
+
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap-theme.css', type='text/css' )
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css', type='text/css' )
+    link(rel='stylesheet', href='/static/css/style.css', type='text/css' )
+  body
+    div#heading Wedding of Xiu Fen and Daniel
+    div#instruction.error Error: #{errortext}
+    div#controlpannel 
+        button(onclick='window.history.back()') back
+    

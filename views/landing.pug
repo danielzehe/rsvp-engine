@@ -1,0 +1,18 @@
+doctype html
+html(lang="en")
+  head
+    title= pageTitle
+
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap-theme.css', type='text/css' )
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css', type='text/css' )
+    link(rel='stylesheet', href='/static/css/style.css', type='text/css' )
+  body
+    div#heading Wedding of Xiu Fen and Daniel
+    div#instruction Please enter your family name and short ID to proceed to the RSVP page.
+    div#inputform 
+      form(action='/web/invitation/personID' method='POST')
+        input(type='text' placeholder='Family Name' name="lastname" )
+        br
+        input(type='text' maxlength='3'  placeholder='2Ya' name="personID")
+        br
+        button(class='btn btn-default') Go
