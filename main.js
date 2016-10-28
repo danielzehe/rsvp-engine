@@ -3,10 +3,11 @@ var ObjectID = require('mongodb').ObjectID
 var express = require('express');
 var bodyParser = require('body-parser')
 var Base58 = require('base58');
+var basicAuth = require('basic-auth-connect');
 
 
 var app = express();
-app.set('views','./views')
+app.set('views',__dirname + '/views')
 app.set('view engine','pug')
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -14,12 +15,12 @@ app.use(bodyParser.json());
 var api_router = express.Router();
 var web_router = express.Router();
 
-var url = 'mongodb://rsvp_user:rsvp_user@localhost:27017/rsvp_engine';
+var url = 'mongodb://mongousername:mongopassword@localhost:20555/rsvp_engine';
 
 var db = null;
 
 
-app.use('/static',express.static('static'));
+app.use('/static',express.static(__dirname + '/static'));
 
 /*
 *	This makes sure that we are connected to the db before doing any api call.
@@ -42,6 +43,8 @@ app.use(function(req,res,next){
 	}
 })
 
+api_router.use(basicAuth('username', 'password'));
+
 app.get('/',function(req,res){
 	res.status(200).render('landing')
 });
@@ -49,6 +52,9 @@ app.get('/',function(req,res){
 api_router.get('/',function(req,res){
 	res.status(200).send("all API Endpoints");
 });
+
+
+
 /*
 *  returns a JSON array of all guests. This will return the data as is in the database, maybe processing should be done.
 */
@@ -538,6 +544,6 @@ web_router.post('/rsvp',function(req,res){
 app.use("/web",web_router);
 
 
-app.listen(3000,function(){
-	console.log('listening on 3000');
+app.listen(64889,function(){
+	console.log('listening on 64889');
 });
