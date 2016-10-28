@@ -1,0 +1,23 @@
+doctype html
+html(lang="en")
+  head
+    title= pageTitle
+
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap-theme.css', type='text/css' )
+    link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css', type='text/css' )
+    link(rel='stylesheet', href='/static/css/style.css', type='text/css' )
+  body
+    div.heading Wedding of Xiu Fen and Daniel 
+    img(src='/static/images/header3.jpg' class='img-responsive')
+    div.heading New Guest
+    div#instruction Please enter the details of the new guest
+    div#inputform 
+      form(action='/web/invitation/'+invitationID+'/addGuest' method='POST')
+        input(type='text' placeholder='First Name' name="name" )
+        input(type='text' placeholder='Last Name' name="surname" )
+        br
+        input(type='email'  placeholder='max@example.com' name="email")
+        input(type='phonenumber' placeholder='+6500000000' name="phonenumber" )
+        br
+        input(type='text' placeholder='Dietary Restrictions' name="dietaryRestrictions" )
+        button(class='btn btn-default') Add

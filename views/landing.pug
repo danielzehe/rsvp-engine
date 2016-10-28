@@ -7,11 +7,13 @@ html(lang="en")
     link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css', type='text/css' )
     link(rel='stylesheet', href='/static/css/style.css', type='text/css' )
   body
-    div#heading Wedding of Xiu Fen and Daniel
+    div.heading Wedding of Xiu Fen and Daniel 
+    img(src='/static/images/header3.jpg' class='img-responsive')
+    div.heading RSVP
     div#instruction Please enter your family name and short ID to proceed to the RSVP page.
     div#inputform 
       form(action='/web/invitation/personID' method='POST')
-        input(type='text' placeholder='Family Name' name="lastname" )
+        input(type='text' placeholder='Lim' name="lastname" )
         br
         input(type='text' maxlength='3'  placeholder='2Ya' name="personID")
         br

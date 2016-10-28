@@ -5,48 +5,47 @@ html(lang="en")
     link(rel='stylesheet', href='/static/css/style.css', type='text/css' )
     link(rel='stylesheet', href='/static/bootstrap/css/bootstrap-theme.css', type='text/css' )
     link(rel='stylesheet', href='/static/bootstrap/css/bootstrap.min.css', type='text/css' )
-  body
-    div#heading Wedding of Xiu Fen and Daniel
-    div(class="row")
-      each guest in guests
-        div(class='col-md-8 col-md-offset-2') 
-          h3 #{guest.name} #{guest.surname}
+  body(class='container-fluid')
+    div
+      div.heading Wedding of Xiu Fen and Daniel 
+      img(src='/static/images/header3.jpg' style="width:100%")
+    //- div.heading RSVP
+    div#instruction Please check the events you can attend. Should we missed someone, please add a "plus 1"
+    div#cards(class="row")
+      form(action='/web/invitation/rsvp/'+invitationID method='POST')
+        div(class='col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1') 
           div.row
-            div(class="col-md-4 col-sm-4")
-              h4 Address
-            div(class="col-md-4 col-sm-4")
-              h4 Contact
-              p 📧 #{guest.contact.email}
-              p 📱 #{guest.contact.phone}
-            div(class="col-md-4 col-sm-4")
-              h4 Attending
-              each invited in guest.invitedto
-                case invited
-                 when 'SG'
-                   label SG
-                     input(type='checkbox')
-                 when 'SGS'
-                   label SGS
-                     input(type='checkbox') 
-                 when 'DE'
-                   label DE
-                     input(type='checkbox') 
-          hr
-      div(class='col-md-8 col-md-offset-2') 
-        h3 Add +1
-
-
-        //- form(action='/web/rsvp' method='POST')
-        //-   table(class='table table-striped')
-        //-     tr
-        //-       th Name
-        //-       th Surname
-        //-       th Attending
-        //-       each guest in guests
-        //-         tr
-        //-           td #{guest.name}
-        //-           td #{guest.surname}
-        //-           td
-        //-             - var yes = false
-        //-             input(type='checkbox' name='attending' checked=yes ? true : false value=guest.personID )
-        //-   button(class='btn btn-default' v-on:click='hallo') Submit
+            each guest in guests
+              div(class='col-md-2 col-sm-4' style='border-right:solid 1px gray')
+                h3 #{guest.name} #{guest.surname}
+                div
+                  p 📧 #{guest.contact.email}
+                  p 📱 #{guest.contact.phone}
+                div#attending
+                  h4 Attending
+                  ul
+                  each invited in guest.invitedto.sort()
+                      case invited
+                        when 'SG'
+                          li
+                            - var attendingSG = guest.attending.indexOf('SG')!=-1;
+                            //- span #{attendingSG}
+                            label 🇸🇬🎉
+                            input(type='checkbox' checked=attendingSG name=guest.personID value='SG')
+                        when 'SGS'
+                          li
+                            - var attendingSGS = guest.attending.indexOf('SGS')!=-1;
+                            //- span #{attendingSGS}
+                            label 🇸🇬👰🏼
+                            input(type='checkbox' checked=attendingSGS name=guest.personID value='SGS') 
+                        when 'DE'
+                          li
+                            - var attendingDE = guest.attending.indexOf('DE')!=-1;
+                            //- span #{attendingDE}
+                            label 🇩🇪🎉
+                            input(type='checkbox' checked=attendingDE name=guest.personID value='DE')
+            div(class='col-md-2 col-sm-4' ) 
+              h3
+                a(href='/web/invitation/'+invitationID+'/addGuest') Add +1
+        div(class='col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1')
+          button(class="btn pull-right btn-default") Responde

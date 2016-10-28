@@ -363,8 +363,14 @@ web_router.get('/invitation/personID/b58/:id',function(req,res){
 				console.log(invitation.guests);
 				db.collection('guests').find({"personID":{$in:invitation.guests}}).toArray(function(err2,guests){
 					invitation.guests =guests;
-
-					res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests});
+					for(guest of guests){
+						guest.personID = Base58.encode(guest.personID);
+						if(guest.attending===undefined){
+							console.log("no attending");
+							guest.attending=[];
+						}
+					}
+					res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests,invitationID:Base58.encode(invitation.inviteID)});
 				});
 
 			}
@@ -399,11 +405,18 @@ web_router.post('/invitation/personID',function(req,res){
 						if(guest.surname.toLowerCase()==sub_lastname.toLowerCase()){
 							hasname=true;
 						}
+
+						guest.personID = Base58.encode(guest.personID);
+						if(guest.attending===undefined){
+							console.log("no attending");
+							guest.attending=[];
+						}
+
 					}
 					console.log(hasname);
 					if(hasname){
 						console.log('sending invitation')
-						res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests});
+						res.render('invitation',{invitename:invitation.invitationName,guests:invitation.guests,invitationID:Base58.encode(invitation.inviteID)});
 					}
 					else{
 						console.log('sending error (name mismatch)')
@@ -421,6 +434,101 @@ web_router.post('/invitation/personID',function(req,res){
 	});
 
 })
+
+web_router.post('/invitation/rsvp/:id',function(req,res){
+	console.log(req);
+	var rsvp_values = req.body;
+	console.log(rsvp_values);
+	db.collection('rsvp').findOne({inviteID:Base58.decode(req.params.id)},function(err,invitation){
+		db.collection('guests').find({"personID":{$in:invitation.guests}}).each(function(err2,guest){
+			// invitation.guests =guests;
+			if(guest!=null){
+				// console.log([err2,guest]);
+				console.log(guest.name+ " "+guest.surname);
+				console.log(rsvp_values[Base58.encode(guest.personID)]);
+				if(rsvp_values[Base58.encode(guest.personID)]!==undefined){
+					guest.attending = rsvp_values[Base58.encode(guest.personID)];
+				}
+				else{
+					guest.attending = [];
+				}
+				// console.log(guest);
+				db.collection('guests').save(guest,{},function(err3,stuff){
+					// console.log([err3,stuff]);
+				})
+			}
+			
+		});
+
+
+	});
+	res.status(200).render('landing');
+})
+
+
+
+web_router.get('/invitation/:id/addGuest',function(req,res){
+	console.log(req.params.id);
+	res.status(200).render('addGuest',{invitationID:req.params.id});
+});
+
+
+web_router.post('/invitation/:id/addGuest',function(req,res){
+	var invitationID = Base58.decode(req.params.id);
+	var body = req.body;
+	console.log(invitationID);
+	console.log(body);
+
+	db.collection('rsvp').findOne({inviteID:invitationID},function(err,invitation){
+		console.log([err,invitation]);
+		db.collection('guests').find({"personID":{$in:invitation.guests}}).toArray(function(err2,guests){
+			var oneguest = guests[0];
+			var guestinvitedto = oneguest.invitedto;
+
+			var newGuest = {
+				contact:{
+					address:{
+
+					},
+					email:body.email,
+					phone:body.phonenumber
+				},
+				familyside: oneguest.familyside,
+				invitedto:guestinvitedto,
+				name:body.name,
+				surname:body.surname,
+				dietaryRestrictions:body.dietaryRestrictions
+			};
+
+
+			db.collection('guests').find({},{_id:0,personID:1}).sort({personID:-1}).limit(1).toArray(function(err3,personID){
+			 	// default value for the personID is 100000
+			 	//will only be used when there is no prior object in the database
+			 	var nextpersonID = 10000;
+			 	if(Object.getOwnPropertyNames(personID[0]).length>0){
+			 		nextpersonID = personID[0].personID+1;
+			 	}
+
+			 	//encode the personID using base58 and adding it to the object
+			 	newGuest.personID = nextpersonID; 
+			 	db.collection('guests').insert(newGuest,function(err,result){
+			 		if(!err){
+			 			invitation.guests.push(nextpersonID);
+			 			db.collection('rsvp').save(invitation,function(err2, stuff){
+			 				res.status(200).render('landing');
+			 			});
+			 		}
+			 		else{
+			 			res.status(500).send();
+			 		}
+			 	});
+			 });
+
+		});
+	});
+
+});
+
 
 web_router.post('/rsvp',function(req,res){
 	console.log(req.body);
