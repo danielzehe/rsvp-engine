@@ -30,20 +30,20 @@ html(lang="en")
                           li
                             - var attendingSG = guest.attending.indexOf('SG')!=-1;
                             //- span #{attendingSG}
-                            label 🇸🇬🎉
                             input(type='checkbox' checked=attendingSG name=guest.personID value='SG')
+                            label(style='margin-left:5px') Singapore Reception
                         when 'SGS'
                           li
                             - var attendingSGS = guest.attending.indexOf('SGS')!=-1;
                             //- span #{attendingSGS}
-                            label 🇸🇬👰🏼
                             input(type='checkbox' checked=attendingSGS name=guest.personID value='SGS') 
+                            label(style='margin-left:5px') Singapore Solemnization
                         when 'DE'
                           li
                             - var attendingDE = guest.attending.indexOf('DE')!=-1;
-                            //- span #{attendingDE}
-                            label 🇩🇪🎉
+                            //- span #{attendingDE} 
                             input(type='checkbox' checked=attendingDE name=guest.personID value='DE')
+                            label(style='margin-left:5px') Germany
             div(class='col-md-2 col-sm-4' ) 
               h3
                 a(href='/web/invitation/'+invitationID+'/addGuest') Add +1
