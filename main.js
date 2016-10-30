@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 var api_router = express.Router();
 var web_router = express.Router();
 
-var url = 'mongodb://mongousername:mongopassword@localhost:20555/rsvp_engine';
+var url = 'mongodb://username:password@localhost:20555/rsvp_engine';
 
 var db = null;
 
@@ -293,9 +293,35 @@ api_router.post('/invitation/inviteID/b58/:id',function(req,res){
 			}
 		});
 	});
+})
 
 
+api_router.post('/invitation/inviteID/b58/:id/attendance',function(req,res){
+	// console.log(Base58.decode(req.params.id));
+	var invitation_inviteID = Base58.decode(req.params.id);
+	var body =req.body;
+	// console.log(JSON.stringify(req.body));
 
+	db.collection('rsvp').findOne({inviteID:invitation_inviteID},function(err,invitation){	
+		db.collection('guests').find({"personID":{$in:invitation.guests}}).each(function(err2,guest){
+			if(guest!=null){
+				for(attendee of body.attendance){
+					if(Base58.decode(attendee.guestid)==guest.personID){
+						guest.attending = attendee.attending;
+					}
+				}
+				db.collection('guests').save(guest,{},function(err3,stuff){
+					console.log('saved');
+				});
+			}
+
+			
+
+
+		});
+	});
+
+	res.status(200).send();
 })
 
 
